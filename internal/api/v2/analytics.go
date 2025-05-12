@@ -85,6 +85,7 @@ type aggregatedBirdInfo struct {
 func (c *Controller) initAnalyticsRoutes() {
 	// Create analytics API group - publicly accessible
 	analyticsGroup := c.Group.Group("/analytics")
+	analyticsGroup.GET("/birdactivity", c.GetBirdActivityOverTime) // Renamed endpoint
 
 	// Species analytics routes
 	speciesGroup := analyticsGroup.Group("/species")
@@ -1039,6 +1040,34 @@ func (c *Controller) GetNewSpeciesDetections(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusOK, response)
+}
+
+// GetBirdActivityOverTime handles requests for bird activity data over time.
+func (c *Controller) GetBirdActivityOverTime(ctx echo.Context) error {
+	// Parse query parameters
+	startDate := ctx.QueryParam("start_date")
+	endDate := ctx.QueryParam("end_date")
+	species := ctx.QueryParam("species")
+	groupBy := ctx.QueryParam("group_by") // "hour" or "day"
+
+	var data interface{}
+	var err error
+
+	// Fetch data based on grouping
+	switch groupBy {
+	case "hour":
+		data, err = c.DS.GetHourlyAnalyticsData(startDate, species)
+	case "day":
+		data, err = c.DS.GetDailyAnalyticsData(startDate, endDate, species)
+	default:
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid group_by parameter. Use 'hour' or 'day'.")
+	}
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Failed to fetch bird activity data: %v", err))
+	}
+
+	return ctx.JSON(http.StatusOK, data)
 }
 
 // Helper function to sum array values
