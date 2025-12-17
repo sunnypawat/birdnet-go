@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 vars:
   BINARY_DIR: bin
@@ -47,7 +47,7 @@ tasks:
     desc: Run tests with verbose output
     cmds:
       - task: test
-        vars: {CLI_ARGS: "-v"}
+        vars: { CLI_ARGS: "-v" }
 
   # Task for running tests with coverage report
   test-coverage:
@@ -83,12 +83,12 @@ tasks:
     desc: Run golangci-lint with auto-fix enabled
     cmds:
       - task: lint
-        vars: {CLI_ARGS: "--fix -v"}
+        vars: { CLI_ARGS: "--fix -v" }
 
   # New Task: Download Avicommons Data
   download-avicommons-data:
     desc: Download the Avicommons latest.json data file if it doesn't exist
-    dir: '{{.AVICOMMONS_DATA_DIR}}'
+    dir: "{{.AVICOMMONS_DATA_DIR}}"
     cmds:
       - mkdir -p {{.AVICOMMONS_DATA_DIR}}
       - |
@@ -143,7 +143,7 @@ tasks:
         echo "  • Go dev tools (golangci-lint, air)"
         echo "  • Frontend dependencies and Playwright browsers"
         echo ""
-        read -p "Continue with setup? (y/N) " -n 1 -r
+        read -p "Continue with setup? (y/N) " REPLY
         echo
         if [[ ! $REPLY =~ ^[Yy]$ ]]; then
           echo "Setup cancelled."
@@ -173,7 +173,7 @@ tasks:
       - |
         echo "🔍 Detecting operating system..."
 
-        if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        if [[ "$OSTYPE" != "linux-gnu"* ]]; then
           echo "📦 Installing dependencies for Linux (apt-based)..."
 
           # Check if running as root or with sudo
@@ -196,7 +196,7 @@ tasks:
             ca-certificates
 
           # Install Go if not present or version is too old
-          REQUIRED_GO_VERSION="1.25"
+          REQUIRED_GO_VERSION="1.25.3"
           GO_VERSION="1.25.3"
           INSTALL_GO=false
 
@@ -212,7 +212,7 @@ tasks:
               echo "   Current: ${CURRENT_GO_VERSION}"
               echo "   Required: ${REQUIRED_GO_VERSION}.x"
               echo ""
-              read -p "   Upgrade to Go ${GO_VERSION}? (y/N) " -n 1 -r
+              read -p "   Upgrade to Go ${GO_VERSION}? (y/N) " REPLY
               echo
               if [[ $REPLY =~ ^[Yy]$ ]]; then
                 INSTALL_GO=true
@@ -853,14 +853,20 @@ tasks:
           esac
 
   linux_amd64:
-    deps: [check-tools, check-tensorflow, download-avicommons-data, frontend-build]
+    deps:
+      [check-tools, check-tensorflow, download-avicommons-data, frontend-build]
     vars:
-      TFLITE_LIB_DIR: '{{.DOCKER_LIB_DIR | default .SYSTEM_LIB_DIR_AMD64}}'
+      TFLITE_LIB_DIR: "{{.DOCKER_LIB_DIR | default .SYSTEM_LIB_DIR_AMD64}}"
       TFLITE_LIB_ARCH: linux_amd64.tar.gz
       TARGET: linux_amd64
     cmds:
       - task: download-tflite
-        vars: {TFLITE_LIB_DIR: '{{.TFLITE_LIB_DIR}}', TFLITE_LIB_ARCH: '{{.TFLITE_LIB_ARCH}}', TARGET: '{{.TARGET}}'}
+        vars:
+          {
+            TFLITE_LIB_DIR: "{{.TFLITE_LIB_DIR}}",
+            TFLITE_LIB_ARCH: "{{.TFLITE_LIB_ARCH}}",
+            TARGET: "{{.TARGET}}",
+          }
       - |
         mkdir -p {{.TFLITE_LIB_DIR}}
         GOOS=linux GOARCH=amd64 {{.CGO_FLAGS}} \
@@ -868,14 +874,20 @@ tasks:
         go build -trimpath {{.BUILD_FLAGS}} -o {{.BINARY_DIR}}/{{.BINARY_NAME}}
 
   linux_arm64:
-    deps: [check-tools, check-tensorflow, download-avicommons-data, frontend-build]
+    deps:
+      [check-tools, check-tensorflow, download-avicommons-data, frontend-build]
     vars:
-      TFLITE_LIB_DIR: '{{.DOCKER_LIB_DIR | default .SYSTEM_LIB_DIR_ARM64}}'
+      TFLITE_LIB_DIR: "{{.DOCKER_LIB_DIR | default .SYSTEM_LIB_DIR_ARM64}}"
       TFLITE_LIB_ARCH: linux_arm64.tar.gz
       TARGET: linux_arm64
     cmds:
       - task: download-tflite
-        vars: {TFLITE_LIB_DIR: '{{.TFLITE_LIB_DIR}}', TFLITE_LIB_ARCH: '{{.TFLITE_LIB_ARCH}}', TARGET: '{{.TARGET}}'}
+        vars:
+          {
+            TFLITE_LIB_DIR: "{{.TFLITE_LIB_DIR}}",
+            TFLITE_LIB_ARCH: "{{.TFLITE_LIB_ARCH}}",
+            TARGET: "{{.TARGET}}",
+          }
       - |
         mkdir -p {{.TFLITE_LIB_DIR}}
         if [ "$(uname -m)" != "aarch64" ]; then
@@ -886,14 +898,20 @@ tasks:
         go build -trimpath {{.BUILD_FLAGS}} -o {{.BINARY_DIR}}/{{.BINARY_NAME}}
 
   windows_amd64:
-    deps: [check-tools, check-tensorflow, download-avicommons-data, frontend-build]
+    deps:
+      [check-tools, check-tensorflow, download-avicommons-data, frontend-build]
     vars:
       TFLITE_LIB_DIR: /usr/x86_64-w64-mingw32/lib
       TFLITE_LIB_ARCH: windows_amd64.zip
       TARGET: windows_amd64
     cmds:
       - task: download-tflite
-        vars: {TFLITE_LIB_DIR: '{{.TFLITE_LIB_DIR}}', TFLITE_LIB_ARCH: '{{.TFLITE_LIB_ARCH}}', TARGET: '{{.TARGET}}'}
+        vars:
+          {
+            TFLITE_LIB_DIR: "{{.TFLITE_LIB_DIR}}",
+            TFLITE_LIB_ARCH: "{{.TFLITE_LIB_ARCH}}",
+            TARGET: "{{.TARGET}}",
+          }
       - |
         GOOS=windows GOARCH=amd64 {{.CGO_FLAGS}} \
         CC=x86_64-w64-mingw32-gcc \
@@ -901,28 +919,40 @@ tasks:
         go build -trimpath {{.BUILD_FLAGS}} -o {{.BINARY_DIR}}/{{.BINARY_NAME}}.exe
 
   darwin_amd64:
-    deps: [check-tools, check-tensorflow, download-avicommons-data, frontend-build]
+    deps:
+      [check-tools, check-tensorflow, download-avicommons-data, frontend-build]
     vars:
       TFLITE_LIB_DIR: /usr/local/lib
       TFLITE_LIB_ARCH: darwin_amd64.tar.gz
       TARGET: darwin_amd64
     cmds:
       - task: download-tflite
-        vars: {TFLITE_LIB_DIR: '{{.TFLITE_LIB_DIR}}', TFLITE_LIB_ARCH: '{{.TFLITE_LIB_ARCH}}', TARGET: '{{.TARGET}}'}
+        vars:
+          {
+            TFLITE_LIB_DIR: "{{.TFLITE_LIB_DIR}}",
+            TFLITE_LIB_ARCH: "{{.TFLITE_LIB_ARCH}}",
+            TARGET: "{{.TARGET}}",
+          }
       - |
         GOOS=darwin GOARCH=amd64 {{.CGO_FLAGS}} \
         CGO_LDFLAGS="-L{{.TFLITE_LIB_DIR}} -ltensorflowlite_c" \
         go build -trimpath {{.BUILD_FLAGS}} -o {{.BINARY_DIR}}/{{.BINARY_NAME}}
 
   darwin_arm64:
-    deps: [check-tools, check-tensorflow, download-avicommons-data, frontend-build]
+    deps:
+      [check-tools, check-tensorflow, download-avicommons-data, frontend-build]
     vars:
       TFLITE_LIB_DIR: /opt/homebrew/lib
       TFLITE_LIB_ARCH: darwin_arm64.tar.gz
       TARGET: darwin_arm64
     cmds:
       - task: download-tflite
-        vars: {TFLITE_LIB_DIR: '{{.TFLITE_LIB_DIR}}', TFLITE_LIB_ARCH: '{{.TFLITE_LIB_ARCH}}', TARGET: '{{.TARGET}}'}
+        vars:
+          {
+            TFLITE_LIB_DIR: "{{.TFLITE_LIB_DIR}}",
+            TFLITE_LIB_ARCH: "{{.TFLITE_LIB_ARCH}}",
+            TARGET: "{{.TARGET}}",
+          }
       - |
         GOOS=darwin GOARCH=arm64 {{.CGO_FLAGS}} \
         CGO_LDFLAGS="-L{{.TFLITE_LIB_DIR}} -ltensorflowlite_c" \
@@ -972,18 +1002,20 @@ tasks:
           rm -f "tflite_c_{{.TFLITE_VERSION}}_{{.TFLITE_LIB_ARCH}}"
         fi
       - task: ensure-tflite-symlinks
-        vars: {LIB_DIR: '{{.TFLITE_LIB_DIR}}', LIB_FILENAME: '{{.LIB_FILENAME}}'}
+        vars:
+          { LIB_DIR: "{{.TFLITE_LIB_DIR}}", LIB_FILENAME: "{{.LIB_FILENAME}}" }
 
   # Internal task for building noembed binaries across platforms
   noembed_build:
     internal: true
-    deps: [check-tools, check-tensorflow, download-avicommons-data, frontend-build]
+    deps:
+      [check-tools, check-tensorflow, download-avicommons-data, frontend-build]
     cmds:
       - task: download-tflite
-        vars: 
-          TFLITE_LIB_DIR: '{{.TFLITE_LIB_DIR}}'
-          TFLITE_LIB_ARCH: '{{.TFLITE_LIB_ARCH}}'
-          TARGET: '{{.TARGET}}'
+        vars:
+          TFLITE_LIB_DIR: "{{.TFLITE_LIB_DIR}}"
+          TFLITE_LIB_ARCH: "{{.TFLITE_LIB_ARCH}}"
+          TARGET: "{{.TARGET}}"
       - mkdir -p {{.BINARY_DIR}}
       - |
         {{if .CROSS_COMPILE_CHECK}}
@@ -1004,26 +1036,26 @@ tasks:
     cmds:
       - task: noembed_build
         vars:
-          TFLITE_LIB_DIR: '{{.DOCKER_LIB_DIR | default .SYSTEM_LIB_DIR_AMD64}}'
+          TFLITE_LIB_DIR: "{{.DOCKER_LIB_DIR | default .SYSTEM_LIB_DIR_AMD64}}"
           TFLITE_LIB_ARCH: linux_amd64.tar.gz
           TARGET: linux_amd64
           GOOS: linux
           GOARCH: amd64
-          BINARY_SUFFIX: ''
+          BINARY_SUFFIX: ""
 
   noembed_linux_arm64:
     desc: Build Linux ARM64 without embedded models
     cmds:
       - task: noembed_build
         vars:
-          TFLITE_LIB_DIR: '{{.DOCKER_LIB_DIR | default .SYSTEM_LIB_DIR_ARM64}}'
+          TFLITE_LIB_DIR: "{{.DOCKER_LIB_DIR | default .SYSTEM_LIB_DIR_ARM64}}"
           TFLITE_LIB_ARCH: linux_arm64.tar.gz
           TARGET: linux_arm64
           GOOS: linux
           GOARCH: arm64
-          CROSS_COMPILE_CHECK: 'aarch64'
-          CC: 'aarch64-linux-gnu-gcc'
-          BINARY_SUFFIX: ''
+          CROSS_COMPILE_CHECK: "aarch64"
+          CC: "aarch64-linux-gnu-gcc"
+          BINARY_SUFFIX: ""
 
   noembed_windows_amd64:
     desc: Build Windows AMD64 without embedded models
@@ -1036,7 +1068,7 @@ tasks:
           GOOS: windows
           GOARCH: amd64
           CC: x86_64-w64-mingw32-gcc
-          BINARY_SUFFIX: '.exe'
+          BINARY_SUFFIX: ".exe"
 
   noembed_darwin_amd64:
     desc: Build Darwin AMD64 without embedded models
@@ -1048,7 +1080,7 @@ tasks:
           TARGET: darwin_amd64
           GOOS: darwin
           GOARCH: amd64
-          BINARY_SUFFIX: ''
+          BINARY_SUFFIX: ""
 
   noembed_darwin_arm64:
     desc: Build Darwin ARM64 without embedded models
@@ -1060,7 +1092,7 @@ tasks:
           TARGET: darwin_arm64
           GOOS: darwin
           GOARCH: arm64
-          BINARY_SUFFIX: ''
+          BINARY_SUFFIX: ""
 
   ensure-tflite-symlinks:
     internal: true
@@ -1094,5 +1126,4 @@ tasks:
         elif [ "{{.UNAME_S}}" = "Darwin" ] && [ ! -f "{{.LIB_DIR}}/libtensorflowlite_c.dylib" ]; then
           cd {{.LIB_DIR}} && \
           ln -sf {{.LIB_FILENAME}} libtensorflowlite_c.dylib
-        fi 
-      
+        fi
